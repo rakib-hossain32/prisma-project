@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import bcrypt from "bcryptjs";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
-import { ICreateUser } from "./user.interface";
+import { ICreateUser, IUpdateProfile } from "./user.interface";
 
 const createUserDB = async (payload: ICreateUser) => {
   const { name, email, password, profilePhoto } = payload;
@@ -70,7 +70,33 @@ const getProfile = async (userId: string) => {
   return user;
 };
 
+const updateMyProfileDB = async (payload: IUpdateProfile, userId: string) => {
+  const { name, email, profilePhoto, bio } = payload;
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name,
+      email,
+      profile: {
+        update: {
+          bio,
+          profilePhoto,
+        },
+      },
+    },
+    omit: {
+      password: true,
+    },
+    include: {
+      profile: true,
+    },
+  });
+  return updatedUser;
+};
+
 export const userService = {
   createUserDB,
   getProfile,
+  updateMyProfileDB,
 };

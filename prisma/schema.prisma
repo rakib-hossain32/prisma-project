@@ -12,15 +12,24 @@ datasource db {
   provider = "postgresql"
 }
 
-
-
 enum ActiveStatus {
-    ACTIVE
-    BLOCKED
+  ACTIVE
+  BLOCKED
 }
 
 enum ROLE {
-    USER
-    AUTHOR
-    ADMIN
+  USER
+  AUTHOR
+  ADMIN
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum CommentStatus {
+  APPROVED
+  REJECT
 }
