@@ -23,8 +23,16 @@ router.get(
 
 router.get("/:postId", postController.getPostById);
 
-router.patch("/:postId", postController.updatePost);
+router.patch(
+  "/:postId",
+  auth(ROLE.ADMIN, ROLE.AUTHOR),
+  postController.updatePost,
+);
 
-router.delete("/:postId", postController.deletePost);
+router.delete(
+  "/:postId",
+  auth(ROLE.ADMIN, ROLE.AUTHOR, ROLE.USER),
+  postController.deletePost,
+);
 
 export const postRoute = router;
