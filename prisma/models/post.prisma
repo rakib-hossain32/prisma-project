@@ -18,3 +18,4 @@ model Post {
   @@index([authorId])
   @@map("posts")
 }
+
