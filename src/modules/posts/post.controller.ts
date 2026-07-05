@@ -3,7 +3,6 @@ import { NextFunction, Request, Response } from "express";
 import catchAsync from "../../utils/catchAsync";
 import { postService } from "./post.service";
 import { sendResponse } from "../../utils/sendResponse";
-import { prisma } from "../../lib/prisma";
 
 const createPost = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -36,7 +35,16 @@ const getPosts = catchAsync(
 );
 
 const getPostsStats = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {},
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await postService.getPostStats();
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Post stats Retrieved successfully.",
+      data: result,
+    });
+  },
 );
 
 const getMyPosts = catchAsync(
@@ -95,22 +103,17 @@ const updatePost = catchAsync(
 );
 const deletePost = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-   const authorId = req.user?.id;
-   const isAdmin = req.user?.role === "ADMIN";
-   const postId = req.params.postId;
-   
+    const authorId = req.user?.id;
+    const isAdmin = req.user?.role === "ADMIN";
+    const postId = req.params.postId;
 
-   await postService.deletePost(
-     postId as string,
-     authorId,
-     isAdmin,
-   );
+    await postService.deletePost(postId as string, authorId, isAdmin);
 
-   sendResponse(res, {
-     success: true,
-     statusCode: httpStatus.OK,
-     message: "Post Deleted successfully.",
-   });
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Post Deleted successfully.",
+    });
   },
 );
 
