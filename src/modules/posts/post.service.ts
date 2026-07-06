@@ -65,32 +65,35 @@ const getPosts = async () => {
     //   ],
     // },
 
-    where: {
-      AND: [
-        // {
-        //   OR: [
-        //     {
-        //       title: {
-        //         contains: "rakib",
-        //         mode: "insensitive",
-        //       },
-        //     },
-        //     {
-        //       content: {
-        //         contains: "shakib",
-        //         mode: "insensitive",
-        //       },
-        //     },
-        //   ],
-        // },
-        {
-          title: "My First Post",
-        },
-        {
-          content: "Content of the post goes here.",
-        },
-      ],
-    },
+    // where: {
+    //   AND: [
+    //     // {
+    //     //   OR: [
+    //     //     {
+    //     //       title: {
+    //     //         contains: "rakib",
+    //     //         mode: "insensitive",
+    //     //       },
+    //     //     },
+    //     //     {
+    //     //       content: {
+    //     //         contains: "shakib",
+    //     //         mode: "insensitive",
+    //     //       },
+    //     //     },
+    //     //   ],
+    //     // },
+    //     {
+    //       title: "My First Post",
+    //     },
+    //     {
+    //       content: "Content of the post goes here.",
+    //     },
+    //   ],
+    // },
+
+    // take: 3,
+    // skip: 3,
 
     include: {
       author: {
