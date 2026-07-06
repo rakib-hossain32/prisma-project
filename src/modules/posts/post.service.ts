@@ -15,6 +15,83 @@ const createPost = async (payload: ICreatePostPayload, userId: string) => {
 
 const getPosts = async () => {
   const posts = await prisma.post.findMany({
+    // where: {
+    //   title: "My Second Post",
+    //   content: "this post content"
+    // },
+
+    //Searce & Filter -- exact match with AND operator
+    // where: {
+    //   AND: [
+    //     {
+    //       title: "My Second Post",
+    //     },
+    //     {
+    //       content: "this post content",
+    //     },
+    //     {
+    //       tags: {
+    //         equals: ["typescript"],
+    //       },
+    //     },
+    //   ],
+    // },
+
+    // Serarching -- partial match
+
+    // where: {
+    //   title: {
+    //     contains: "first",
+    //     mode: "insensitive"
+    //   }
+    // },
+
+    // searching with OR operator.
+
+    // where: {
+    //   OR: [
+    //     {
+    //       title: {
+    //         contains: "first",
+    //         mode: "insensitive",
+    //       },
+    //     },
+    //     {
+    //       content: {
+    //         contains: "fi",
+    //         mode: "insensitive",
+    //       },
+    //     },
+    //   ],
+    // },
+
+    where: {
+      AND: [
+        // {
+        //   OR: [
+        //     {
+        //       title: {
+        //         contains: "rakib",
+        //         mode: "insensitive",
+        //       },
+        //     },
+        //     {
+        //       content: {
+        //         contains: "shakib",
+        //         mode: "insensitive",
+        //       },
+        //     },
+        //   ],
+        // },
+        {
+          title: "My First Post",
+        },
+        {
+          content: "Content of the post goes here.",
+        },
+      ],
+    },
+
     include: {
       author: {
         omit: {
