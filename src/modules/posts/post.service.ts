@@ -1,6 +1,10 @@
 import { CommentStatus, PostStatus } from "../../../generated/prisma/enums";
 import { prisma } from "../../lib/prisma";
-import { ICreatePostPayload, IUpdatePostPayload } from "./post.interface";
+import {
+  ICreatePostPayload,
+  IPostQuery,
+  IUpdatePostPayload,
+} from "./post.interface";
 
 const createPost = async (payload: ICreatePostPayload, userId: string) => {
   const result = await prisma.post.create({
@@ -13,7 +17,13 @@ const createPost = async (payload: ICreatePostPayload, userId: string) => {
   return result;
 };
 
-const getPosts = async () => {
+const getPosts = async (query: IPostQuery) => {
+  const limit = query.limit ? Number(query.limit) : 3;
+  const page = query.page ? Number(query.page) : 1;
+  const skip = (page - 1) * limit;
+  const sortBy = query.sortBy ? query.sortBy : "createdAt";
+  const sortOrder = query.sortOrder ? query.sortOrder : "asc";
+
   const posts = await prisma.post.findMany({
     // where: {
     //   title: "My Second Post",
@@ -94,6 +104,31 @@ const getPosts = async () => {
 
     // take: 3,
     // skip: 3,
+
+    where: {
+      AND: [
+        {
+          OR: [
+            {
+              content: {
+                contains: query.content as string,
+                mode: "insensitive",
+              },
+            },
+          ],
+        },
+        {
+          title: query.title ? query.title : {},
+        },
+      ],
+    },
+
+    take: limit,
+    skip: skip,
+
+    orderBy: {
+      [sortBy]: sortOrder,
+    },
 
     include: {
       author: {
