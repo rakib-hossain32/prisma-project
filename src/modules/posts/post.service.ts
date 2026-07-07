@@ -1,4 +1,5 @@
 import { CommentStatus, PostStatus } from "../../../generated/prisma/enums";
+import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
 import {
   ICreatePostPayload,
@@ -23,6 +24,27 @@ const getPosts = async (query: IPostQuery) => {
   const skip = (page - 1) * limit;
   const sortBy = query.sortBy ? query.sortBy : "createdAt";
   const sortOrder = query.sortOrder ? query.sortOrder : "asc";
+
+  const andCondition: PostWhereInput[] = [];
+
+  if (query.content) {
+    andCondition.push({
+      OR: [
+        {
+          content: {
+            contains: query.content as string,
+            mode: "insensitive",
+          },
+        },
+      ],
+    });
+  }
+
+  if (query.title) {
+    andCondition.push({
+      title: query.title,
+    });
+  }
 
   const posts = await prisma.post.findMany({
     // where: {
@@ -105,22 +127,26 @@ const getPosts = async (query: IPostQuery) => {
     // take: 3,
     // skip: 3,
 
+    // where: {
+    //   AND: [
+    //     {
+    //       OR: [
+    //         {
+    //           content: {
+    //             contains: query.content as string,
+    //             mode: "insensitive",
+    //           },
+    //         },
+    //       ],
+    //     },
+    //     {
+    //       title: query.title ? query.title : {},
+    //     },
+    //   ],
+    // },
+
     where: {
-      AND: [
-        {
-          OR: [
-            {
-              content: {
-                contains: query.content as string,
-                mode: "insensitive",
-              },
-            },
-          ],
-        },
-        {
-          title: query.title ? query.title : {},
-        },
-      ],
+      AND: andCondition,
     },
 
     take: limit,
