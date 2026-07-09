@@ -1,5 +1,5 @@
 import httpStatus from "http-status";
-import { NextFunction, Request, Response } from "express";
+import e, { NextFunction, Request, Response } from "express";
 import catchAsync from "../../utils/catchAsync";
 import { subscriptionService } from "./subscription.service";
 import { sendResponse } from "../../utils/sendResponse";
@@ -19,6 +19,22 @@ const createCheckoutSession = catchAsync(
   },
 );
 
+const handleWebhook = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    let event = req.body as Buffer;
+    const signature = req.headers["stripe-signature"]!;
+
+    await subscriptionService.handleWebhook(event, signature as string);
+
+    sendResponse(res, {
+      success: true,
+      statusCode: httpStatus.OK,
+      message: "Webhook triggered successfully",
+    });
+  },
+);
+
 export const subscriptionController = {
   createCheckoutSession,
+  handleWebhook,
 };

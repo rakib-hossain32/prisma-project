@@ -52,6 +52,44 @@ const createCheckoutSession = async (userId: string) => {
   };
 };
 
+const handleWebhook = async (payload: Buffer, signature: string) => {
+
+
+  const event = stripe.webhooks.constructEvent(
+    payload,
+    signature,
+    config.stripe_webhook_secret,
+  );
+
+   // Handle the event
+  switch (event.type) {
+    case 'checkout.session.completed':
+      const paymentIntent = event.data.object;
+      
+      // Then define and call a method to handle the successful payment intent.
+      // handlePaymentIntentSucceeded(paymentIntent);
+      break;
+    case 'customer.subscription.updated':
+      const paymentMethod = event.data.object;
+      // Then define and call a method to handle the successful attachment of a PaymentMethod.
+      // handlePaymentMethodAttached(paymentMethod);
+      break;
+    case "customer.subscription.deleted":
+      const paymentObject = event.data.object
+
+      break;
+    default:
+      // Unexpected event type
+      console.log(`No event Unhandled event type ${event.type}.`);
+      break;
+  }
+
+  // Return a 200 response to acknowledge receipt of the event
+  // response.send();
+
+};
+
 export const subscriptionService = {
   createCheckoutSession,
+  handleWebhook,
 };
