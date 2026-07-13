@@ -1,3 +1,4 @@
+import Stripe from "stripe";
 import config from "../../config";
 import { prisma } from "../../lib/prisma";
 import { stripe } from "../../lib/stripe";
@@ -53,29 +54,67 @@ const createCheckoutSession = async (userId: string) => {
 };
 
 const handleWebhook = async (payload: Buffer, signature: string) => {
-
-
   const event = stripe.webhooks.constructEvent(
     payload,
     signature,
     config.stripe_webhook_secret,
   );
 
-   // Handle the event
+  // Handle the event
   switch (event.type) {
-    case 'checkout.session.completed':
-      const paymentIntent = event.data.object;
-      
+    case "checkout.session.completed":
+      // const paymentIntent = event.data.object;
+
+      const session: Stripe.Checkout.Session = event.data.object;
+      const userId = session.metadata?.userId;
+      const stripeCustomerId = session.customer as string;
+      const stripeSubscriptionId = session.subscription as string;
+
+      if (!userId || !stripeCustomerId || !stripeSubscriptionId) {
+        throw new Error("Webhook Failed");
+      }
+
+      const stripeSubscription = await stripe.subscriptions.retrieve(
+        stripeSubscriptionId as string,
+      );
+
+      // console.log("stripe subscription", stripeSubscription.items.data[0]);
+
+      // const currentPeriodStart
+      const currentPeriodEndMilliseconds =
+        stripeSubscription.items.data[0]?.current_period_end!;
+
+      const currentPeriodEnd = new Date(currentPeriodEndMilliseconds * 1000);
+
+      await prisma.subscription.upsert({
+        where: {
+          userId,
+        },
+        create: {
+          userId,
+          stripeCustomerId,
+          stripeSubscriptionId,
+          status: "ACTIVE",
+          currentPeriodEnd,
+        },
+        update: {
+          stripeCustomerId,
+          stripeSubscriptionId,
+          status: "ACTIVE",
+          currentPeriodEnd,
+        },
+      });
+
       // Then define and call a method to handle the successful payment intent.
       // handlePaymentIntentSucceeded(paymentIntent);
       break;
-    case 'customer.subscription.updated':
+    case "customer.subscription.updated":
       const paymentMethod = event.data.object;
       // Then define and call a method to handle the successful attachment of a PaymentMethod.
       // handlePaymentMethodAttached(paymentMethod);
       break;
     case "customer.subscription.deleted":
-      const paymentObject = event.data.object
+      const paymentObject = event.data.object;
 
       break;
     default:
@@ -86,7 +125,6 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
 
   // Return a 200 response to acknowledge receipt of the event
   // response.send();
-
 };
 
 export const subscriptionService = {
