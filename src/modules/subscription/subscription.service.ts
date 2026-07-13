@@ -65,45 +65,9 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
     case "checkout.session.completed":
       // const paymentIntent = event.data.object;
 
-      const session: Stripe.Checkout.Session = event.data.object;
-      const userId = session.metadata?.userId;
-      const stripeCustomerId = session.customer as string;
-      const stripeSubscriptionId = session.subscription as string;
+      // const session: Stripe.Checkout.Session = event.data.object;
 
-      if (!userId || !stripeCustomerId || !stripeSubscriptionId) {
-        throw new Error("Webhook Failed");
-      }
-
-      const stripeSubscription = await stripe.subscriptions.retrieve(
-        stripeSubscriptionId as string,
-      );
-
-      // console.log("stripe subscription", stripeSubscription.items.data[0]);
-
-      // const currentPeriodStart
-      const currentPeriodEndMilliseconds =
-        stripeSubscription.items.data[0]?.current_period_end!;
-
-      const currentPeriodEnd = new Date(currentPeriodEndMilliseconds * 1000);
-
-      await prisma.subscription.upsert({
-        where: {
-          userId,
-        },
-        create: {
-          userId,
-          stripeCustomerId,
-          stripeSubscriptionId,
-          status: "ACTIVE",
-          currentPeriodEnd,
-        },
-        update: {
-          stripeCustomerId,
-          stripeSubscriptionId,
-          status: "ACTIVE",
-          currentPeriodEnd,
-        },
-      });
+      await handlerCheckoutCompleted(event.data.object);
 
       // Then define and call a method to handle the successful payment intent.
       // handlePaymentIntentSucceeded(paymentIntent);
@@ -125,6 +89,55 @@ const handleWebhook = async (payload: Buffer, signature: string) => {
 
   // Return a 200 response to acknowledge receipt of the event
   // response.send();
+};
+
+const getEndDate = (payload: Stripe.Subscription) => {
+  const currentPeriodEndMilliseconds =
+    payload.items.data[0]?.current_period_end!;
+
+  const currentPeriodEnd = new Date(currentPeriodEndMilliseconds * 1000);
+  return currentPeriodEnd;
+};
+
+const handlerCheckoutCompleted = async (session: Stripe.Checkout.Session) => {
+  const userId = session.metadata?.userId;
+  const stripeCustomerId = session.customer as string;
+  const stripeSubscriptionId = session.subscription as string;
+
+  if (!userId || !stripeCustomerId || !stripeSubscriptionId) {
+    throw new Error("Webhook Failed");
+  }
+
+  const stripeSubscription = await stripe.subscriptions.retrieve(
+    stripeSubscriptionId as string,
+  );
+
+  // console.log("stripe subscription", stripeSubscription.items.data[0]);
+
+  // const currentPeriodStart
+  // const currentPeriodEndMilliseconds =
+  //   stripeSubscription.items.data[0]?.current_period_end!;
+
+  const currentPeriodEnd = getEndDate(stripeSubscription);
+
+  await prisma.subscription.upsert({
+    where: {
+      userId,
+    },
+    create: {
+      userId,
+      stripeCustomerId,
+      stripeSubscriptionId,
+      status: "ACTIVE",
+      currentPeriodEnd,
+    },
+    update: {
+      stripeCustomerId,
+      stripeSubscriptionId,
+      status: "ACTIVE",
+      currentPeriodEnd,
+    },
+  });
 };
 
 export const subscriptionService = {
