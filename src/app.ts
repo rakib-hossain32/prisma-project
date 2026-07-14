@@ -11,6 +11,7 @@ import { notFound } from "./middleware/notFound";
 import { globalErrorHandler } from "./middleware/globalErrorHandler";
 import { subscriptionRouter } from "./modules/subscription/subscription.route";
 import { stripe } from "./lib/stripe";
+import { premiumRouter } from "./modules/premium/premium.route";
 
 const app: Application = express();
 
@@ -51,7 +52,6 @@ const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 //         });
 //       }
 //     }
-
 
 //     console.log("event after try block", event)
 
@@ -95,6 +95,7 @@ app.use("/api/auth", authRouter);
 app.use("/api/posts", postRoute);
 app.use("/api/comments", commentRoute);
 app.use("/api/subscription", subscriptionRouter);
+app.use("/api/premium", premiumRouter);
 
 app.use(notFound);
 

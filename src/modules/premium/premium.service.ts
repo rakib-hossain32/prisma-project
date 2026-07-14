@@ -1,0 +1,18 @@
+import { prisma } from "../../lib/prisma";
+
+const getPremiumContent = async (userId: string) => {
+
+    
+
+  const posts = await prisma.post.findMany({
+    where: {
+      isPremium: true,
+    },
+  });
+    
+    return posts
+};
+
+export const premiumService = {
+  getPremiumContent,
+};
