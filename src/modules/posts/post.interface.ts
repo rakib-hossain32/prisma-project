@@ -6,6 +6,7 @@ export interface ICreatePostPayload {
   content: string;
   thumbnail?: string;
   isFeatured?: boolean;
+  isPremium?: boolean;
   status?: PostStatus;
   tags: string[];
 }
@@ -19,10 +20,9 @@ export interface IUpdatePostPayload {
   tags?: string[];
 }
 
-export interface IPostQuery  extends PostWhereInput{
+export interface IPostQuery extends PostWhereInput {
   // title?: string;
   // content?: string;
-
 
   sortBy?: string;
   sortOrder?: string;

@@ -23,10 +23,7 @@ const createPost = catchAsync(
 
 const getPosts = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-
-    const query = req.query
-
-    
+    const query = req.query;
 
     const posts = await postService.getPosts(query);
 
@@ -34,7 +31,8 @@ const getPosts = catchAsync(
       success: true,
       statusCode: httpStatus.OK,
       message: "Posts Retrieved successfully.",
-      data: posts,
+      data: posts.data,
+      meta: posts.meta,
     });
   },
 );
